@@ -1,7 +1,7 @@
 module.exports = {
   // 数据库配置
   mysql: {
-    host: 'data.nineheaven.top',
+    host: '127.0.0.1',
     port: 3306,
     username: 'tradeflow',
     password: 'Agree.2019',
@@ -10,6 +10,6 @@ module.exports = {
   },
   tradeflow: {
     // 流程的配置文件保存的基础路径
-    basePath: 'E:/data/tradeflow'
+    basePath: '/home/npm/apps/files'
   }
 }
