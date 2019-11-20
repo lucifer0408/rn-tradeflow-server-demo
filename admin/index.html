@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>交易流程配置</title>
+
+  <!-- 引用jquery -->
+  <script type="text/javascript" src="lib/jquery/jquery.min.js"></script>
+  <!-- 引用bootstrap -->
+  <script type="text/javascript" src="lib/bootstrap/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="lib/bootstrap/bootstrap.min.css" />
+  <link rel="stylesheet" href="lib/bootstrap/bootstrap.theme.min.css" />
+
+  <style>
+    h1 {
+      text-align: center;
+    }
+
+    div.container {
+      width: 100%;
+    }
+
+    div.modal-dialog {
+      width: 80%;
+    }
+
+    button {
+      margin-right: 10px;
+    }
+  </style>
+
+  <script type="text/javascript">
+    /**
+     * @author: Lucifer
+     * @description: 通用发起post请求的方法
+     * */
+    function jquerypost(url, data, func) {
+      var baseurl = window.location.protocol + '//' + window.location.host
+      $.ajax({
+        url: baseurl + url,
+        type: 'post',
+        async: true,
+        dataType: 'json',
+        data: data,
+        success: func
+      })
+    }
+
+    $(function() {
+      queryTradeConfigList()
+
+      $('#refreshtradeBtn').click(function(e) {
+        queryTradeConfigList()
+      })
+
+      $('#addtradeBtn').click(function(e) {
+        $('#tradecode').val('')
+        $('#tradename').val('')
+        $('#tradecontent').val('')
+        $('#tradecontent').removeAttr('readonly')
+
+        $('#uploadtrade').show()
+        $('#deletetrade').hide()
+
+        $('#deletetradeWin').modal('show')
+      })
+
+      $('#deletetrade').click(function(e) {
+        var tradecode = $('#tradecode').val()
+        if (tradename) {
+          jquerypost('/service/tradeflow/deleteTradeflow', {tradecode: tradecode}, function(result) {
+            alert('删除交易成功')
+            $('#deletetradeWin').modal('hide')
+            queryTradeConfigList()
+          })
+        }
+      })
+
+      $('#uploadtrade').click(function(e) {
+        var tradecode = $('#tradecode').val()
+        var tradename = $('#tradename').val()
+        var tradecontent = $('#tradecontent').val()
+
+        if (tradecode && tradename && tradecontent) {
+          var data = {
+            tradecode: tradecode,
+            tradename: tradename,
+            tradecontent: tradecontent
+          }
+
+          jquerypost('/service/tradeflow/uploadTradeflow', data, function(result) {
+            alert('上传交易成功')
+            $('#deletetradeWin').modal('hide')
+            queryTradeConfigList()
+          })
+        } else {
+          alert('交易码、交易名称和交易内容不能为空')
+        }
+      })
+    })
+
+    function queryTradeConfigList() {
+      jquerypost('/service/tradeflow/queryTradeflowList', {}, function(result) {
+        var content = ''
+        for (var i = 0; i < result.length; i++) {
+          content += `<li class="list-group-item">${result[i].tradecode}-${result[i].tradename}</li>`
+        }
+        $('#mocklist').html(content)
+
+        $('li').unbind()
+
+        $('li').click(function(e) {
+          var tradecode = $(e.target).html()
+          tradecode = tradecode.substr(0, tradecode.lastIndexOf('-'))
+          jquerypost('/service/tradeflow/getTradeflowConfig', {tradecode: tradecode}, function(result) {
+            $('#tradecode').val(result.tradecode)
+            $('#tradename').val(result.tradename)
+            $('#tradecontent').val(result.tradeconfig)
+            $('#tradecontent').removeAttr('readonly')
+
+            $('#uploadtrade').show()
+            $('#deletetrade').show()
+
+            $('#deletetradeWin').modal('show')
+          })
+        })
+      })
+    }
+  </script>
+</head>
+<body>
+<div class="container">
+  <h1>交易流程配置</h1>
+
+  <button class="btn btn-primary btn-sm" id="addtradeBtn">添加交易</button>
+  <button class="btn btn-primary btn-sm" id="refreshtradeBtn">刷新</button>
+
+  <br /><br />
+
+  <ul id="mocklist" class="list-group">
+
+  </ul>
+
+  <div class="modal fade" id="deletetradeWin" tabindex="-1" role="dialog" aria-labelledby="deletetradeTitle" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+            &times;
+          </button>
+          <h4 class="modal-title" id="deletetradeTitle">
+            交易信息
+          </h4>
+        </div>
+        <div class="modal-body">
+          <form role="form" class="form-horizontal">
+            <div class="form-group">
+              <label for="tradecode" class="col-md-2 col-lg-1">交易码</label>
+              <div class="col-md-10 col-lg-11">
+                <input id="tradecode" type="text" class="form-control" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="tradename" class="col-md-2 col-lg-1">交易名称</label>
+              <div class="col-md-10 col-lg-11">
+                <input id="tradename" type="text" class="form-control" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="tradecontent" class="col-md-2 col-lg-1">交易流程配置</label>
+              <div class="col-md-10 col-lg-11">
+                <textarea class="form-control" id="tradecontent" rows="10" readonly></textarea>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button id="deletetrade" class="btn btn-default">删除交易</button>
+          <button id="uploadtrade" class="btn btn-default">上传/更新交易</button>
+          <button class="btn btn-primary" data-dismiss="modal">关闭</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -4,7 +4,6 @@
 
 > https://github.com/lucifer0408/rn-tradeflow.git
 
-## 目录结构
+## 注意
 
-+ admin         管理端页面根目录
-+ server        服务端根目录
+> 本工程只是Demo，实现功能即可
